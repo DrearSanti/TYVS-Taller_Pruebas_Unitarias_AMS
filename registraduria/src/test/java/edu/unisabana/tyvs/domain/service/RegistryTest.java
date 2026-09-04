@@ -95,4 +95,56 @@ class RegistryTest {
         assertEquals(RegisterResult.INVALID_AGE, result);
     }
 
+        @Test
+    @DisplayName("Una edad mayor a 120 se rechaza con INVALID_AGE")
+    void shouldRejectInvalidAgeOver120() {
+        // Arrange: borde superior del rango biologico, un anio por encima
+        Person imposible = new Person("Elena", 5, 121, Gender.FEMALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(imposible);
+
+        // Assert
+        assertEquals(RegisterResult.INVALID_AGE, result);
+    }
+
+    @Test
+    @DisplayName("Un recien nacido se rechaza con UNDERAGE")
+    void shouldRejectUnderageAtZero() {
+        // Arrange: borde inferior de la clase "menor de edad"
+        Person bebe = new Person("Mateo", 6, 0, Gender.MALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(bebe);
+
+        // Assert
+        assertEquals(RegisterResult.UNDERAGE, result);
+    }
+
+    @Test
+    @DisplayName("Una persona de 18 anios queda registrada")
+    void shouldAcceptAdultAt18() {
+        // Arrange: borde inferior de la clase "mayor de edad"
+        Person adulto = new Person("Sofia", 8, 18, Gender.FEMALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(adulto);
+
+        // Assert
+        assertEquals(RegisterResult.VALID, result);
+    }
+
+    @Test
+    @DisplayName("Una persona de 120 anios queda registrada")
+    void shouldAcceptMaxAge120() {
+        // Arrange: borde superior valido del rango biologico
+        Person longevo = new Person("Julio", 9, 120, Gender.MALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(longevo);
+
+        // Assert
+        assertEquals(RegisterResult.VALID, result);
+    }
+
 }
