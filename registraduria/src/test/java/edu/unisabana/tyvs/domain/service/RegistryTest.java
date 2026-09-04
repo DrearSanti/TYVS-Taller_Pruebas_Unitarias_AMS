@@ -1,14 +1,13 @@
 package edu.unisabana.tyvs.domain.service;
 
-import edu.unisabana.tyvs.domain.model.Gender;
-import edu.unisabana.tyvs.domain.model.Person;
-import edu.unisabana.tyvs.domain.model.RegisterResult;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import edu.unisabana.tyvs.domain.model.Gender;
+import edu.unisabana.tyvs.domain.model.Person;
+import edu.unisabana.tyvs.domain.model.RegisterResult;
 
 /**
  * Pruebas por EJEMPLO del dominio: cada prueba fija una entrada concreta y su
@@ -82,4 +81,18 @@ class RegistryTest {
         // Assert
         assertEquals(RegisterResult.UNDERAGE, result);
     }
+
+        @Test
+    @DisplayName("Una edad negativa se rechaza con INVALID_AGE")
+    void shouldRejectInvalidAgeBelowZero() {
+        // Arrange: persona viva, id valido, edad biologicamente imposible
+        Person imposible = new Person("Diego", 4, -1, Gender.MALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(imposible);
+
+        // Assert
+        assertEquals(RegisterResult.INVALID_AGE, result);
+    }
+
 }
