@@ -4,20 +4,17 @@ import edu.unisabana.tyvs.domain.model.Person;
 import edu.unisabana.tyvs.domain.model.RegisterResult;
 
 /**
- * PUNTO DE PARTIDA DEL TALLER - no es la solucion final.
+ * Servicio de dominio que decide si una persona puede quedar registrada
+ * como votante.
  *
- * Esta clase es el estado del codigo al terminar la ITERACION 2 del README
- * (regla "persona muerta"). Las reglas que faltan son las que usted debe
- * construir con TDD (Red -> Green -> Refactor):
- *
- *   - id <= 0                -> INVALID
- *   - edad < 0 o edad > 120  -> INVALID_AGE
- *   - 0 <= edad < 18         -> UNDERAGE
- *   - id ya registrado antes -> DUPLICATED
- *
- * Escriba PRIMERO la prueba que falla, luego la implementacion minima.
+ * Las reglas se evaluan en orden (R1 -> R7) y la PRIMERA que falla determina
+ * el resultado. Por eso una persona muerta de 15 anios devuelve DEAD y no
+ * UNDERAGE: es una decision de diseno, documentada en el Wiki.
  */
 public class Registry {
+
+    /** Edad minima para ejercer el voto. */
+    private static final int MIN_AGE = 18;
 
     public RegisterResult registerVoter(Person p) {
         if (p == null) {
@@ -26,11 +23,10 @@ public class Registry {
         if (!p.isAlive()) {
             return RegisterResult.DEAD;
         }
-        if (p.getAge() < 18) {
+        if (p.getAge() < MIN_AGE) {
             return RegisterResult.UNDERAGE;
         }
-        // Implementacion minima para pasar las pruebas de la iteracion 2.
-        // TODO iteracion 3 en adelante: validar id, edad y duplicados.
+        // TODO iteracion 4 en adelante: rango biologico de edad, id y duplicados.
         return RegisterResult.VALID;
     }
 }
