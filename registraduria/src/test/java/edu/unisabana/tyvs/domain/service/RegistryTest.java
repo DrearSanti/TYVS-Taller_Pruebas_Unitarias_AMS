@@ -69,4 +69,17 @@ class RegistryTest {
         // Assert
         assertEquals(RegisterResult.INVALID, result);
     }
+
+    @Test
+    @DisplayName("Una persona de 17 años se rechaza con UNDERAGE")
+    void shouldRejectUnderageAt17() {
+        // Arrange: persona viva, id valido, un anio por debajo del limite
+        Person menor = new Person("Laura", 7, 17, Gender.FEMALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(menor);
+
+        // Assert
+        assertEquals(RegisterResult.UNDERAGE, result);
+    }
 }
