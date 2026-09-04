@@ -16,6 +16,10 @@ public class Registry {
     /** Edad minima para ejercer el voto. */
     private static final int MIN_AGE = 18;
 
+    /** Rango biologicamente posible para una edad. */
+    private static final int MIN_VALID_AGE = 0;
+    private static final int MAX_VALID_AGE = 120;
+
     public RegisterResult registerVoter(Person p) {
         if (p == null) {
             return RegisterResult.INVALID; // regla defensiva
@@ -23,10 +27,13 @@ public class Registry {
         if (!p.isAlive()) {
             return RegisterResult.DEAD;
         }
+        if (p.getAge() < MIN_VALID_AGE || p.getAge() > MAX_VALID_AGE) {
+            return RegisterResult.INVALID_AGE;
+        }
         if (p.getAge() < MIN_AGE) {
             return RegisterResult.UNDERAGE;
         }
-        // TODO iteracion 4 en adelante: rango biologico de edad, id y duplicados.
+        // TODO iteracion 5 en adelante: id invalido y duplicados.
         return RegisterResult.VALID;
     }
 }
