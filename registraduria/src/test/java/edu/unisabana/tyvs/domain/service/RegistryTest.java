@@ -11,7 +11,7 @@ import edu.unisabana.tyvs.domain.model.RegisterResult;
 
 /**
  * Pruebas por EJEMPLO del dominio: cada prueba fija una entrada concreta y su
- * resultado esperado. Estado al terminar la ITERACION 2 del README.
+ * resultado esperado. Incluye las validaciones de identificador y duplicados.
  *
  * Complemento: RegistryPropertiesTest expresa las mismas reglas como
  * PROPIEDADES sobre rangos completos de entradas, en vez de ejemplos sueltos.
@@ -35,7 +35,7 @@ class RegistryTest {
         registry = new Registry();
     }
 
-    @Test
+        @Test
     @DisplayName("Una persona viva y mayor de edad queda registrada")
     void shouldRegisterValidPerson() {
         // Arrange: preparar los datos
@@ -48,7 +48,7 @@ class RegistryTest {
         assertEquals(RegisterResult.VALID, result);
     }
 
-    @Test
+       @Test
     @DisplayName("Una persona no viva se rechaza con DEAD")
     void shouldRejectDeadPerson() {
         // Arrange: preparar los datos
@@ -61,7 +61,7 @@ class RegistryTest {
         assertEquals(RegisterResult.DEAD, result);
     }
 
-    @Test
+       @Test
     @DisplayName("Una persona nula se rechaza con INVALID")
     void shouldReturnInvalidWhenPersonIsNull() {
         // Act
@@ -71,7 +71,7 @@ class RegistryTest {
         assertEquals(RegisterResult.INVALID, result);
     }
 
-    @Test
+        @Test
     @DisplayName("Una persona de 17 años se rechaza con UNDERAGE")
     void shouldRejectUnderageAt17() {
         // Arrange: persona viva, id valido, un anio por debajo del limite
@@ -110,7 +110,7 @@ class RegistryTest {
         assertEquals(RegisterResult.INVALID_AGE, result);
     }
 
-    @Test
+        @Test
     @DisplayName("Un recien nacido se rechaza con UNDERAGE")
     void shouldRejectUnderageAtZero() {
         // Arrange: borde inferior de la clase "menor de edad"
@@ -123,7 +123,7 @@ class RegistryTest {
         assertEquals(RegisterResult.UNDERAGE, result);
     }
 
-    @Test
+        @Test
     @DisplayName("Una persona de 18 anios queda registrada")
     void shouldAcceptAdultAt18() {
         // Arrange: borde inferior de la clase "mayor de edad"
@@ -136,7 +136,7 @@ class RegistryTest {
         assertEquals(RegisterResult.VALID, result);
     }
 
-    @Test
+        @Test
     @DisplayName("Una persona de 120 anios queda registrada")
     void shouldAcceptMaxAge120() {
         // Arrange: borde superior valido del rango biologico
@@ -161,7 +161,7 @@ class RegistryTest {
         assertEquals(RegisterResult.INVALID, result);
     }
 
-    @Test
+        @Test
     @DisplayName("Un documento con numero negativo se rechaza con INVALID")
     void shouldRejectWhenIdIsNegative() {
         // Arrange
@@ -189,7 +189,7 @@ class RegistryTest {
         assertEquals(RegisterResult.DUPLICATED, result);
     }
 
-    @Test
+        @Test
     @DisplayName("Un documento distinto se acepta despues de otro registro")
     void shouldAcceptDifferentIdAfterRegistration() {
         // Arrange: ya hay una persona registrada con otro documento
