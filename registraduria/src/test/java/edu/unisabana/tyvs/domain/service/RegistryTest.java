@@ -21,12 +21,14 @@ class RegistryTest {
     private Registry registry;
 
     /**
-     * Un Registry NUEVO antes de cada prueba.
+     * Crea un Registry nuevo antes de cada prueba.
      *
-     * Importante: cuando implemente DUPLICATED, el Registry guardara estado
-     * (los ids ya registrados). Si compartiera la misma instancia entre
-     * pruebas, una prueba podria "ensuciar" a la siguiente y los resultados
-     * dependerian del orden de ejecucion. Cada prueba debe ser independiente.
+     * Registry guarda los identificadores aceptados en un Set de instancia.
+     * Crear una instancia nueva evita que los registros de una prueba
+     * afecten a las siguientes y mantiene su independencia.
+     *
+     * El Set no debe ser static: compartiria los identificadores entre
+     * instancias incluso al crear un Registry nuevo en cada prueba.
      */
     @BeforeEach
     void setUp() {
