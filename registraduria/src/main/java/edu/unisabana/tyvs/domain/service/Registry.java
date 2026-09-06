@@ -19,12 +19,15 @@ public class Registry {
     /** Rango biologicamente posible para una edad. */
     private static final int MIN_VALID_AGE = 0;
     private static final int MAX_VALID_AGE = 120;
+    
+    /** Identificador minimo valido. */
+    private static final int MIN_VALID_ID = 1;
 
     public RegisterResult registerVoter(Person p) {
         if (p == null) {
             return RegisterResult.INVALID; // regla defensiva
         }
-        if (p.getId() <= 0) {
+        if (p.getId() < MIN_VALID_ID) {
             return RegisterResult.INVALID;
         }
         if (!p.isAlive()) {
@@ -36,7 +39,7 @@ public class Registry {
         if (p.getAge() < MIN_AGE) {
             return RegisterResult.UNDERAGE;
         }
-        // TODO iteracion 5 en adelante: id invalido y duplicados.
+        // TODO iteracion 6: detectar identificadores duplicados.
         return RegisterResult.VALID;
     }
 }
