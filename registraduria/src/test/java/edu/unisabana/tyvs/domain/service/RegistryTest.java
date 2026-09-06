@@ -146,5 +146,30 @@ class RegistryTest {
         // Assert
         assertEquals(RegisterResult.VALID, result);
     }
+        @Test
+    @DisplayName("Un documento con numero cero se rechaza con INVALID")
+    void shouldRejectWhenIdIsZero() {
+        // Arrange
+        Person sinDocumento = new Person("Pedro", 0, 25, Gender.MALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(sinDocumento);
+
+        // Assert
+        assertEquals(RegisterResult.INVALID, result);
+    }
+
+    @Test
+    @DisplayName("Un documento con numero negativo se rechaza con INVALID")
+    void shouldRejectWhenIdIsNegative() {
+        // Arrange
+        Person documentoInvalido = new Person("Rosa", -5, 25, Gender.FEMALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(documentoInvalido);
+
+        // Assert
+        assertEquals(RegisterResult.INVALID, result);
+    }
 
 }
