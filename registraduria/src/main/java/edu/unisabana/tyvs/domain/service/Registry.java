@@ -2,6 +2,8 @@ package edu.unisabana.tyvs.domain.service;
 
 import edu.unisabana.tyvs.domain.model.Person;
 import edu.unisabana.tyvs.domain.model.RegisterResult;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Servicio de dominio que decide si una persona puede quedar registrada
@@ -19,10 +21,18 @@ public class Registry {
     /** Rango biologicamente posible para una edad. */
     private static final int MIN_VALID_AGE = 0;
     private static final int MAX_VALID_AGE = 120;
+    
+    /** Identificador minimo valido. */
+    private static final int MIN_VALID_ID = 1;
+
+    private final Set<Integer> registrados = new HashSet<>();
 
     public RegisterResult registerVoter(Person p) {
         if (p == null) {
             return RegisterResult.INVALID; // regla defensiva
+        }
+        if (p.getId() < MIN_VALID_ID) {
+            return RegisterResult.INVALID;
         }
         if (!p.isAlive()) {
             return RegisterResult.DEAD;
@@ -33,7 +43,10 @@ public class Registry {
         if (p.getAge() < MIN_AGE) {
             return RegisterResult.UNDERAGE;
         }
-        // TODO iteracion 5 en adelante: id invalido y duplicados.
+        if (registrados.contains(p.getId())) {
+            return RegisterResult.DUPLICATED;
+        }
+        registrados.add(p.getId());
         return RegisterResult.VALID;
     }
 }
