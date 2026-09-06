@@ -172,4 +172,33 @@ class RegistryTest {
         assertEquals(RegisterResult.INVALID, result);
     }
 
+        @Test
+    @DisplayName("Un documento ya registrado se rechaza con DUPLICATED")
+    void shouldRejectDuplicatedId() {
+        // Arrange: ya hay una persona registrada con este documento
+        Person primera = new Person("Luis", 777, 25, Gender.MALE, true);
+        Person segunda = new Person("Luis", 777, 25, Gender.MALE, true);
+        registry.registerVoter(primera);
+
+        // Act
+        RegisterResult result = registry.registerVoter(segunda);
+
+        // Assert
+        assertEquals(RegisterResult.DUPLICATED, result);
+    }
+
+    @Test
+    @DisplayName("Un documento distinto se acepta despues de otro registro")
+    void shouldAcceptDifferentIdAfterRegistration() {
+        // Arrange: ya hay una persona registrada con otro documento
+        registry.registerVoter(new Person("Luis", 777, 25, Gender.MALE, true));
+        Person otra = new Person("Marta", 778, 30, Gender.FEMALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(otra);
+
+        // Assert
+        assertEquals(RegisterResult.VALID, result);
+    }
+
 }
