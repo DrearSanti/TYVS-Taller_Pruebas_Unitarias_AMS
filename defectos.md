@@ -1,78 +1,41 @@
-# Registro de Defectos — EJEMPLO RESUELTO
+# Registro de defectos
 
-> ℹ️ **Este archivo es un ejemplo del profesor**, no su entrega. Muestra el nivel de detalle y los dos formatos aceptados.
-> Para su taller, parta de [`defectos_template.md`](defectos_template.md) y documente los defectos que **usted** encuentre al ejecutar sus propias pruebas.
+Defectos detectados durante el desarrollo mediante TDD del proyecto Registraduría. Los resultados obtenidos corresponden al momento de detección, antes de aplicar la corrección.
 
-Este documento recopila los defectos encontrados durante la ejecución de pruebas unitarias del proyecto **Registraduría**.
-Cada defecto debe documentarse claramente para facilitar su análisis y corrección.
+## Defecto 01 — Orden de las validaciones de edad
 
-Los defectos de abajo se detectaron sobre el estado del código **al terminar la iteración 1** del README (cuando `registerVoter` aún devolvía `VALID` para cualquier entrada).
+- **Caso:** persona viva con edad -1.
+- **Resultado esperado:** `INVALID_AGE`.
+- **Resultado obtenido:** `UNDERAGE`.
+- **Causa:** la validación de mayoría de edad (R5) se evaluaba antes que la validación del rango de edad (R4). Una edad negativa cumplía la condición de ser menor de 18.
+- **Detección:** prueba `shouldRejectInvalidAgeBelowZero`, iteración 4 de Santiago, según el documento de asignación del equipo.
+- **Corrección:** mover la validación R4 antes de R5.
+- **Estado:** Resuelto. La prueba pasa en la ejecución actual.
 
----
+## Defecto 02 — Aceptación de identificadores no positivos
 
-## Formato 1: Lista detallada (narrativa)
+- **Caso:** personas vivas de 25 años con identificadores 0 y -5.
+- **Resultado esperado:** `INVALID` en ambos casos.
+- **Resultado obtenido:** `VALID` en ambos casos.
+- **Causa:** faltaba validar que el identificador fuera positivo.
+- **Detección:** pruebas `shouldRejectWhenIdIsZero` y `shouldRejectWhenIdIsNegative`, iteración 5.
+- **Evidencia RED:** 14 pruebas ejecutadas, 2 fallos y 0 errores; `expected: <INVALID> but was: <VALID>`.
+- **Corrección:** validar el identificador después de comprobar la nulidad y antes de comprobar si la persona está viva. En el refactor se extrajo `MIN_VALID_ID = 1`.
+- **Estado:** Resuelto. Ambas pruebas pasan.
+- **Commits:** RED `bbd79ee`, GREEN `3281578`, REFACTOR `5936e29`.
 
-### Defecto 01
+## Defecto 03 — Aceptación de un documento ya registrado
 
-- **Caso de prueba**: Persona con edad -1 (edad inválida).
-- **Entrada**: `Person(name="Juan", id=101, age=-1, gender=MALE, alive=true)`
-- **Resultado esperado**: `INVALID_AGE`
-- **Resultado obtenido**: `VALID`
-- **Causa probable**: Falta de validación de edad negativa en `Registry.registerVoter`.
-- **Estado**: Abierto
+- **Caso:** registrar dos veces, en la misma instancia de Registry, personas vivas de 25 años con identificador 777.
+- **Resultado esperado:** `VALID` en el primer registro y `DUPLICATED` en el segundo.
+- **Resultado obtenido:** el segundo registro devolvía `VALID`.
+- **Causa:** Registry no almacenaba los identificadores aceptados ni comprobaba su existencia.
+- **Detección:** prueba `shouldRejectDuplicatedId`, iteración 6.
+- **Evidencia RED:** 16 pruebas ejecutadas, 1 fallo y 0 errores; `expected: <DUPLICATED> but was: <VALID>`.
+- **Corrección:** agregar un Set de instancia para guardar los identificadores aceptados y consultar duplicados después de las demás validaciones. Solo se almacenan registros válidos.
+- **Estado:** Resuelto. La prueba de duplicados y la de aceptación de un documento diferente pasan.
+- **Commits:** RED `95c2e26`, GREEN `03c2bae`, REFACTOR `cd5a00f`.
 
----
+## Verificación final de las iteraciones 5 y 6
 
-### Defecto 02
-
-- **Caso de prueba**: Persona muerta.
-- **Entrada**: `Person(name="Ana", id=102, age=45, gender=FEMALE, alive=false)`
-- **Resultado esperado**: `DEAD`
-- **Resultado obtenido**: `VALID`
-- **Causa probable**: No se evalúa la condición `alive=false`.
-- **Estado**: **Resuelto** — corregido en la iteración 2 (`if (!p.isAlive()) return RegisterResult.DEAD;`) y verificado con la prueba `shouldRejectDeadPerson`.
-
----
-
-### Defecto 03
-
-- **Caso de prueba**: Registro duplicado con el mismo `id`.
-- **Entradas**:
-  - Persona 1: `Person(name="Carlos", id=200, age=30, gender=MALE, alive=true)`
-  - Persona 2: `Person(name="Carla", id=200, age=25, gender=FEMALE, alive=true)`
-- **Resultado esperado**:
-  - Persona 1 → `VALID`
-  - Persona 2 → `DUPLICATED`
-- **Resultado obtenido**:
-  - Persona 1 → `VALID`
-  - Persona 2 → `VALID`
-- **Causa probable**: No hay verificación de `id` previamente registrado.
-- **Estado**: Abierto
-
----
-
-## Formato 2: Tabla de defectos (bug tracking)
-
-| ID | Caso de Prueba | Entrada | Resultado Esperado | Resultado Obtenido | Causa Probable | Estado |
-|-----|---------------------|---------|--------------------|--------------------|----------------|--------|
-| 01 | Edad inválida | `Person(id=101, age=-1, alive=true)` | `INVALID_AGE` | `VALID` | No se valida edad negativa | Abierto |
-| 02 | Persona muerta | `Person(id=102, age=45, alive=false)` | `DEAD` | `VALID` | No se evalúa condición `alive=false` | Resuelto (iteración 2) |
-| 03 | Registro duplicado | `Person(id=200, age=30, alive=true)` + `Person(id=200, age=25, alive=true)` | 1º → `VALID` 2º → `DUPLICATED` | 1º → `VALID` 2º → `VALID` | No hay verificación de `id` duplicado | Abierto |
-
----
-
-## Convenciones de Estado
-
-| Estado | Significado |
-|---------|-------------|
-| **Abierto** | El defecto fue detectado pero no corregido. |
-| **En progreso** | El defecto se encuentra en análisis o corrección. |
-| **Resuelto** | El defecto fue corregido y validado mediante pruebas. |
-
----
-
-## Observaciones
-
-- Se pueden usar **ambos formatos** o elegir uno como estándar de equipo.
-- El objetivo es **gestionar la calidad del software** y **demostrar un proceso sistemático de testing**.
-- Mantener este archivo actualizado durante todo el ciclo de desarrollo.
+La ejecución de `mvn clean test` después del último refactor terminó con 16 pruebas, 0 fallos, 0 errores y `BUILD SUCCESS`.
