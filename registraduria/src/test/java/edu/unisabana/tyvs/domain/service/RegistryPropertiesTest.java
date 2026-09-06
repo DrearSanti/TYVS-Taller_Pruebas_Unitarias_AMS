@@ -28,9 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * 'xkqz'" falla, le reportara "edad 0 con nombre ''", que es mucho mas facil
  * de diagnosticar.
  *
- * OJO: estas propiedades corresponden a las reglas YA implementadas
- * (iteraciones 1 y 2). Las de edad y duplicados son parte de su ejercicio; el
- * README explica como escribirlas.
+ * Las tres primeras propiedades vienen del repositorio base. Las cinco
+ * siguientes son las del equipo (entregable 4b).
  */
 class RegistryPropertiesTest {
 
@@ -46,12 +45,13 @@ class RegistryPropertiesTest {
         return Arbitraries.strings().alpha().ofMaxLength(20);
     }
 
+    // ------------------------------------------------------------------
+    // Propiedades de referencia (repositorio base)
+    // ------------------------------------------------------------------
+
     /**
      * Regla R3: una persona no viva se rechaza SIEMPRE, sin importar su edad,
      * su documento ni su genero.
-     *
-     * Esta unica propiedad cubre mas terreno que cualquier tabla de ejemplos:
-     * afirma algo sobre el espacio completo de entradas, no sobre cinco filas.
      */
     @Property
     void unaPersonaNoVivaSiempreEsRechazada(
@@ -68,11 +68,6 @@ class RegistryPropertiesTest {
     /**
      * Propiedad de DETERMINISMO: registrar la misma persona en dos Registry
      * recien creados produce el mismo resultado.
-     *
-     * Parece obvia, pero es justo la que se rompe cuando alguien introduce
-     * estado compartido (por ejemplo, un Set estatico de ids en vez de uno de
-     * instancia). Es un buen ejemplo de propiedad que atrapa errores de diseno
-     * que ninguna prueba por ejemplo buscaria.
      */
     @Property
     void elResultadoNoDependeDeLaInstancia(
@@ -93,10 +88,6 @@ class RegistryPropertiesTest {
     /**
      * Propiedad de TOTALIDAD: registerVoter nunca devuelve null ni lanza una
      * excepcion, sea cual sea la entrada.
-     *
-     * Un contrato debil, pero sorprendentemente util: detecta desbordamientos,
-     * divisiones por cero y NullPointerException que aparecen solo en los
-     * bordes del dominio.
      */
     @Property
     void nuncaDevuelveNullNiLanzaExcepcion(
@@ -111,5 +102,118 @@ class RegistryPropertiesTest {
         RegisterResult resultado = new Registry().registerVoter(p);
 
         org.junit.jupiter.api.Assertions.assertNotNull(resultado);
+    }
+
+    // ------------------------------------------------------------------
+    // Propiedades del equipo (entregable 4b)
+    // ------------------------------------------------------------------
+
+    /**
+     * R5. Todo menor de edad con datos por lo demas validos se rechaza como
+     * UNDERAGE.
+     *
+     * El rango de edad 0..17 es exactamente la clase de equivalencia
+     * "menor de edad" de la tabla del Wiki. La prueba por ejemplo
+     * shouldRejectUnderageAt17 verifica un representante; esta verifica los
+     * dieciocho valores de la clase, con cualquier documento y cualquier
+     * genero.
+     */
+    @Property
+    void todoMenorDeEdadEsRechazado(
+            @ForAll @IntRange(min = 1, max = 100_000) int id,
+            @ForAll @IntRange(min = 0, max = 17) int edad,
+            @ForAll("generos") Gender genero) {
+
+        Person menor = new Person("X", id, edad, genero, true);
+
+        assertEquals(RegisterResult.UNDERAGE, new Registry().registerVoter(menor));
+    }
+
+    /**
+     * R5 y R7. Todo adulto vivo, con documento positivo y edad dentro del
+     * rango biologico, queda registrado.
+     *
+     * Es la contraparte positiva de la anterior: juntas afirman que la
+     * frontera de los 18 anios parte el rango 0..120 sin huecos ni solapes.
+     */
+    @Property
+    void todoAdultoValidoSeRegistra(
+            @ForAll @IntRange(min = 1, max = 100_000) int id,
+            @ForAll @IntRange(min = 18, max = 120) int edad,
+            @ForAll("generos") Gender genero) {
+
+        Person adulto = new Person("X", id, edad, genero, true);
+
+        assertEquals(RegisterResult.VALID, new Registry().registerVoter(adulto));
+    }
+
+    /**
+     * R4. Toda edad por encima del maximo biologico se rechaza como
+     * INVALID_AGE, nunca como VALID ni como UNDERAGE.
+     *
+     * El rango llega hasta 1000 y no hasta Integer.MAX_VALUE a proposito: el
+     * interes esta en la clase de equivalencia "edad imposible", no en probar
+     * el desbordamiento de int, que ya cubre nuncaDevuelveNullNiLanzaExcepcion.
+     */
+    @Property
+    void todaEdadImposibleEsRechazada(
+            @ForAll @IntRange(min = 1, max = 100_000) int id,
+            @ForAll @IntRange(min = 121, max = 1000) int edad,
+            @ForAll("generos") Gender genero) {
+
+        Person imposible = new Person("X", id, edad, genero, true);
+
+        assertEquals(RegisterResult.INVALID_AGE, new Registry().registerVoter(imposible));
+    }
+
+    /**
+     * PROPIEDAD ESTRUCTURAL. Un rechazo no deja huella en el Registry: repetir
+     * la misma llamada rechazada sobre la MISMA instancia devuelve siempre el
+     * mismo resultado.
+     *
+     * Es la unica propiedad que reutiliza la instancia en vez de crear una
+     * nueva, y por eso es la unica que puede detectar un efecto de borde en el
+     * estado interno. Protege la Decision 3 del equipo: solo se almacenan los
+     * documentos de personas efectivamente registradas. Si al implementar R6
+     * el id se guardara antes de evaluar las demas reglas, un menor rechazado
+     * quedaria ocupando su propio documento y esta propiedad lo delataria.
+     *
+     * Se restringe a edades 0..17 (que siempre son rechazo) porque un VALID
+     * NO es idempotente una vez exista R6: el segundo intento debe devolver
+     * DUPLICATED. Esa asimetria es intencional y esta documentada en el Wiki.
+     */
+    @Property
+    void unRechazoNoDejaHuellaEnElRegistro(
+            @ForAll @IntRange(min = 1, max = 100_000) int id,
+            @ForAll @IntRange(min = 0, max = 17) int edad,
+            @ForAll("generos") Gender genero) {
+
+        Registry registry = new Registry();
+        Person menor = new Person("X", id, edad, genero, true);
+
+        RegisterResult primera = registry.registerVoter(menor);
+        RegisterResult segunda = registry.registerVoter(menor);
+
+        assertEquals(primera, segunda);
+    }
+
+    /**
+     * R2. Todo documento no positivo se rechaza como INVALID.
+     *
+     * ESTA PROPIEDAD ESTA EN ROJO A PROPOSITO. La regla R2 aun no esta
+     * implementada, de modo que hoy devuelve VALID y jqwik reporta el
+     * contraejemplo reducido. Es TDD aplicado a propiedades: la propiedad se
+     * escribe antes que la implementacion y pasa a verde sola cuando la
+     * guarda de identificador entre al codigo.
+     */
+    @Property
+    void todoIdNoPositivoEsRechazado(
+            @ForAll @IntRange(min = -1000, max = 0) int id,
+            @ForAll @IntRange(min = 18, max = 120) int edad,
+            @ForAll("generos") Gender genero) {
+
+        Person sinDocumento = new Person("X", id, edad, genero, true);
+
+        assertEquals(RegisterResult.INVALID, new Registry().registerVoter(sinDocumento));
     }
 }
