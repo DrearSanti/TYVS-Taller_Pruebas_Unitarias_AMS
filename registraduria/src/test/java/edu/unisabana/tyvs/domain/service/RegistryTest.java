@@ -35,7 +35,7 @@ class RegistryTest {
         registry = new Registry();
     }
 
-        @Test
+    @Test
     @DisplayName("Una persona viva y mayor de edad queda registrada")
     void shouldRegisterValidPerson() {
         // Arrange: preparar los datos
@@ -48,7 +48,7 @@ class RegistryTest {
         assertEquals(RegisterResult.VALID, result);
     }
 
-       @Test
+    @Test
     @DisplayName("Una persona no viva se rechaza con DEAD")
     void shouldRejectDeadPerson() {
         // Arrange: preparar los datos
@@ -61,7 +61,7 @@ class RegistryTest {
         assertEquals(RegisterResult.DEAD, result);
     }
 
-       @Test
+    @Test
     @DisplayName("Una persona nula se rechaza con INVALID")
     void shouldReturnInvalidWhenPersonIsNull() {
         // Act
@@ -71,7 +71,20 @@ class RegistryTest {
         assertEquals(RegisterResult.INVALID, result);
     }
 
-        @Test
+    @Test
+    @DisplayName("Una persona muerta y menor de edad se rechaza con DEAD")
+    void shouldReturnDeadWhenPersonIsDeadAndUnderage() {
+        // Arrange: la muerte tiene precedencia sobre la minoria de edad
+        Person muertoMenor = new Person("Andres", 3, 15, Gender.MALE, false);
+
+        // Act
+        RegisterResult result = registry.registerVoter(muertoMenor);
+
+        // Assert
+        assertEquals(RegisterResult.DEAD, result);
+    }
+
+    @Test
     @DisplayName("Una persona de 17 años se rechaza con UNDERAGE")
     void shouldRejectUnderageAt17() {
         // Arrange: persona viva, id valido, un anio por debajo del limite
@@ -84,7 +97,7 @@ class RegistryTest {
         assertEquals(RegisterResult.UNDERAGE, result);
     }
 
-        @Test
+    @Test
     @DisplayName("Una edad negativa se rechaza con INVALID_AGE")
     void shouldRejectInvalidAgeBelowZero() {
         // Arrange: persona viva, id valido, edad biologicamente imposible
@@ -97,7 +110,7 @@ class RegistryTest {
         assertEquals(RegisterResult.INVALID_AGE, result);
     }
 
-        @Test
+    @Test
     @DisplayName("Una edad mayor a 120 se rechaza con INVALID_AGE")
     void shouldRejectInvalidAgeOver120() {
         // Arrange: borde superior del rango biologico, un anio por encima
@@ -110,7 +123,7 @@ class RegistryTest {
         assertEquals(RegisterResult.INVALID_AGE, result);
     }
 
-        @Test
+    @Test
     @DisplayName("Un recien nacido se rechaza con UNDERAGE")
     void shouldRejectUnderageAtZero() {
         // Arrange: borde inferior de la clase "menor de edad"
@@ -123,7 +136,7 @@ class RegistryTest {
         assertEquals(RegisterResult.UNDERAGE, result);
     }
 
-        @Test
+    @Test
     @DisplayName("Una persona de 18 anios queda registrada")
     void shouldAcceptAdultAt18() {
         // Arrange: borde inferior de la clase "mayor de edad"
@@ -136,7 +149,7 @@ class RegistryTest {
         assertEquals(RegisterResult.VALID, result);
     }
 
-        @Test
+    @Test
     @DisplayName("Una persona de 120 anios queda registrada")
     void shouldAcceptMaxAge120() {
         // Arrange: borde superior valido del rango biologico
@@ -148,7 +161,8 @@ class RegistryTest {
         // Assert
         assertEquals(RegisterResult.VALID, result);
     }
-        @Test
+
+    @Test
     @DisplayName("Un documento con numero cero se rechaza con INVALID")
     void shouldRejectWhenIdIsZero() {
         // Arrange
@@ -161,7 +175,7 @@ class RegistryTest {
         assertEquals(RegisterResult.INVALID, result);
     }
 
-        @Test
+    @Test
     @DisplayName("Un documento con numero negativo se rechaza con INVALID")
     void shouldRejectWhenIdIsNegative() {
         // Arrange
@@ -174,7 +188,7 @@ class RegistryTest {
         assertEquals(RegisterResult.INVALID, result);
     }
 
-        @Test
+    @Test
     @DisplayName("Un documento ya registrado se rechaza con DUPLICATED")
     void shouldRejectDuplicatedId() {
         // Arrange: ya hay una persona registrada con este documento
@@ -189,7 +203,7 @@ class RegistryTest {
         assertEquals(RegisterResult.DUPLICATED, result);
     }
 
-        @Test
+    @Test
     @DisplayName("Un documento distinto se acepta despues de otro registro")
     void shouldAcceptDifferentIdAfterRegistration() {
         // Arrange: ya hay una persona registrada con otro documento
@@ -202,5 +216,4 @@ class RegistryTest {
         // Assert
         assertEquals(RegisterResult.VALID, result);
     }
-
 }
